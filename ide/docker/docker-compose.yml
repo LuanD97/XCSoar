@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  xcsoar-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      DISPLAY: ${DISPLAY}
+      XAUTHORITY: /root/.Xauthority
+    volumes:
+      - ../../:/opt/xcsoar
+      - ${HOME}/.ccache:/opt/xcsoar/.ccache
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+    network_mode: host
+    stdin_open: true
+    tty: true

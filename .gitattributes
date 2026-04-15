@@ -1,0 +1,23 @@
+# Normalize all line endings to LF for cross-platform compatibility
+* text=auto eol=lf
+
+# Shell scripts
+*.sh eol=lf
+*.bash eol=lf
+
+# Python scripts
+*.py eol=lf
+
+# Build system
+Makefile eol=lf
+*.mk eol=lf
+
+# Keep binary files as-is
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.tar.bz2 binary
