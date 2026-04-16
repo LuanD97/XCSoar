@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   xcsoar-dev:
     build:
@@ -7,12 +5,16 @@ services:
       dockerfile: docker/Dockerfile
     environment:
       DISPLAY: ${DISPLAY}
-      XAUTHORITY: /root/.Xauthority
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-wayland-0}
+      XDG_RUNTIME_DIR: /mnt/wslg/runtime-dir
+      PULSE_SERVER: /mnt/wslg/PulseServer   # optional, for audio
     volumes:
       - ../../:/opt/xcsoar
       - ${HOME}/.ccache:/opt/xcsoar/.ccache
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+      - /mnt/wslg:/mnt/wslg                 # WSLg runtime (Wayland + audio)
+    devices:
+      - /dev/dri:/dev/dri                   # GPU access for OpenGL
     network_mode: host
     stdin_open: true
     tty: true
