@@ -91,6 +91,9 @@ C172R_ReferenceParams() noexcept
                     /*rolling_friction=*/0.02);
 }
 
+/// 1 knot expressed in m/s
+static constexpr double kKt2Mps = 0.51444;
+
 // ---------------------------------------------------------------------------
 // Test 1: Identity – all corrections ≈ 1.0 at reference conditions
 // ---------------------------------------------------------------------------
@@ -223,7 +226,7 @@ TestHotDayDensity()
 static void
 TestHeadwind()
 {
-  constexpr double kHW_MPS = 10.0 * 0.51444; ///< 10 kt = 5.1444 m/s
+  constexpr double kHW_MPS = 10.0 * kKt2Mps; ///< 10 kt = 5.1444 m/s
 
   auto p = C172R_ReferenceParams();
   p.headwind_mps = kHW_MPS;
@@ -250,7 +253,7 @@ TestHeadwind()
 static void
 TestTailwind()
 {
-  constexpr double kTW_MPS = -10.0 * 0.51444; ///< 10 kt tailwind (negative)
+  constexpr double kTW_MPS = -10.0 * kKt2Mps; ///< 10 kt tailwind (negative)
 
   auto p = C172R_ReferenceParams();
   p.headwind_mps = kTW_MPS; // negative = tailwind
@@ -365,7 +368,7 @@ TestHighAltitudeHeadwind()
 {
   constexpr double kElevM = 1609.0;
   constexpr double kOAT   = 15.0 - 6.5 * kElevM / 1000.0;
-  constexpr double kHW    = 10.0 * 0.51444;
+  constexpr double kHW    = 10.0 * kKt2Mps;
 
   auto p = C172R_ReferenceParams();
   p.runway_elevation_m = kElevM;
