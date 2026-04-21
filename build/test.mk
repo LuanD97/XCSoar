@@ -124,6 +124,7 @@ TEST_NAMES = \
 	TestWeglideScoring \
 	TestNetCoupeScoring \
 	TestDMStScoring \
+	TestTakeoffCalculator \
 	TestHttpsVerify
 
 ifeq ($(TARGET_IS_ANDROID),n)
@@ -2554,6 +2555,13 @@ TEST_VERSION_NUMBER_SOURCES = \
 	$(TEST_SRC_DIR)/TestVersionNumber.cpp
 TEST_VERSION_NUMBER_DEPENDS = MATH UTILS
 $(eval $(call link-program,TestVersionNumber,TEST_VERSION_NUMBER))
+
+TEST_TAKEOFF_CALCULATOR_SOURCES = \
+	$(SRC)/TakeoffCalculator/TakeoffCalculator.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestTakeoffCalculator.cpp
+TEST_TAKEOFF_CALCULATOR_DEPENDS = MATH
+$(eval $(call link-program,TestTakeoffCalculator,TEST_TAKEOFF_CALCULATOR))
 
 TEST_HTTPS_VERIFY_SOURCES = \
 	$(SRC)/net/SocketError.cxx \
