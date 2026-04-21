@@ -44,6 +44,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Dialogs/ReplayDialog.hpp"
 #include "Dialogs/dlgQuickGuide.hpp"
 #include "Dialogs/dlgGestureHelp.hpp"
+#include "Dialogs/TakeoffDialog.hpp"
 #include "Message.hpp"
 #include "Markers/Markers.hpp"
 #include "MainWindow.hpp"
@@ -776,4 +777,12 @@ InputEvents::eventUploadIGCFile([[maybe_unused]] const char *misc) {
         // success!
       }
   }
+}
+
+// TakeoffCalculator
+// Opens the takeoff distance calculator dialog.
+void
+InputEvents::eventTakeoffCalculator([[maybe_unused]] const char *misc)
+{
+  ShowTakeoffCalculator();
 }
