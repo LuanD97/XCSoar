@@ -6,12 +6,16 @@
  *
  * Inputs (automatically converted to SI before calculation):
  *   Gross mass, reference mass, AFM ground roll, AFM 50 ft distance,
- *   wing area, CL_max, runway elevation, OAT, QNH, headwind,
+ *   wing area, CL_max, runway elevation, runway length, OAT, QNH, headwind,
  *   slope, surface type.
  *
  * Outputs (updated in real time on every field change):
  *   Density altitude, density ratio σ, V_stall, V_rotate,
- *   corrected ground roll, corrected distance to 50 ft obstacle.
+ *   corrected ground roll, corrected distance to 50 ft obstacle,
+ *   runway length warning (if ground roll exceeds runway length).
+ *
+ * Runway elevation and runway length are auto-populated from the nearest
+ * landable waypoint in the waypoints database when GPS position is available.
  *
  * Physics reference: see TakeoffCalculator.hpp
  */
@@ -32,6 +36,10 @@
 #include "GlideSolvers/GlidePolar.hpp"
 #include "Language/Language.hpp"
 #include "UIGlobals.hpp"
+#include "Components.hpp"
+#include "DataComponents.hpp"
+#include "Engine/Waypoint/Waypoints.hpp"
+#include "Engine/Waypoint/Waypoint.hpp"
 
 #include <stdio.h>
 
@@ -72,6 +80,7 @@ class TakeoffCalculatorPanel final
     WingArea,
     ClMax,
     RunwayElev,
+    RunwayLength,
     OutsideTemp,
     Qnh,
     Headwind,
@@ -85,6 +94,7 @@ class TakeoffCalculatorPanel final
     VRotateResult,
     GroundRollResult,
     Distance50ftResult,
+    RunwayWarningResult,
   };
 
 public:
@@ -131,6 +141,24 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
   const double oat_user     = settings.forecast_temperature.ToUser();
   const double qnh_user     =
       Units::ToUserPressure(settings.pressure.GetHectoPascal());
+
+  // Try to auto-populate elevation and runway length from nearest landable.
+  double init_elev_m = 0.0;
+  double init_runway_len_m = 0.0;  // 0 = unknown / not auto-populated
+
+  if (data_components != nullptr && data_components->waypoints != nullptr) {
+    const auto &basic = CommonInterface::Basic();
+    if (basic.location_available) {
+      const auto wp = data_components->waypoints->GetNearestLandable(
+          basic.location, 100000.0);
+      if (wp != nullptr) {
+        if (wp->has_elevation)
+          init_elev_m = wp->elevation;
+        if (wp->runway.IsLengthDefined())
+          init_runway_len_m = wp->runway.GetLength();
+      }
+    }
+  }
 
   // -------------------------------------------------------------------------
   // Input rows
@@ -206,17 +234,32 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
 
   /* 6 RunwayElev */
   AddFloat(_("Runway elevation"),
-           _("Runway threshold elevation above MSL."),
+           _("Runway threshold elevation above MSL. "
+             "Auto-populated from the nearest landable waypoint when GPS is available."),
            "%.0f %s", "%.0f",
            Units::ToUserAltitude(-500),
            Units::ToUserAltitude(5000),
            Units::ToUserAltitude(10),
            false,
            UnitGroup::ALTITUDE,
-           0,
+           Units::ToUserAltitude(init_elev_m),
            this);
 
-  /* 7 OutsideTemp */
+  /* 7 RunwayLength */
+  AddFloat(_("Runway length"),
+           _("Available runway length. "
+             "Auto-populated from the nearest landable waypoint when GPS is available. "
+             "Set to 0 if unknown. A warning is shown when ground roll exceeds this value."),
+           "%.0f %s", "%.0f",
+           0,
+           Units::ToUserAltitude(6000),
+           Units::ToUserAltitude(10),
+           false,
+           UnitGroup::ALTITUDE,
+           Units::ToUserAltitude(init_runway_len_m),
+           this);
+
+  /* 8 OutsideTemp */
   AddFloat(_("OAT"),
            _("Outside air temperature at runway level."),
            "%.1f %s", "%.1f",
@@ -233,7 +276,7 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
     wp.RefreshDisplay();
   }
 
-  /* 8 QNH */
+  /* 9 QNH */
   AddFloat(_("QNH"),
            _("QNH altimeter setting."),
            GetUserPressureFormat(true),
@@ -251,7 +294,7 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
     wp.RefreshDisplay();
   }
 
-  /* 9 Headwind */
+  /* 10 Headwind */
   AddFloat(_("Headwind"),
            _("Headwind component along the takeoff run. "
              "Negative value for tailwind."),
@@ -264,7 +307,7 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
            0,
            this);
 
-  /* 10 Slope */
+  /* 11 Slope */
   AddFloat(_("Slope"),
            _("Runway gradient in the takeoff direction (%). "
              "Positive = uphill, negative = downhill."),
@@ -272,7 +315,7 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
            -5, 5, 0.1, false,
            0, this);
 
-  /* 11 Surface */
+  /* 12 Surface */
   AddEnum(_("Surface"),
           _("Runway surface type (sets the rolling friction coefficient)."),
           kSurfaceChoices,
@@ -282,14 +325,14 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
   // Output rows (read-only)
   // -------------------------------------------------------------------------
 
-  /* 12 DensityAltResult */
+  /* 13 DensityAltResult */
   AddReadOnly(_("Density altitude"),
               _("Altitude in the ISA atmosphere with the same air density "
                 "as the current conditions."),
               "%.0f %s",
               UnitGroup::ALTITUDE, 0);
 
-  /* 13 DensityRatioResult */
+  /* 14 DensityRatioResult */
   AddReadOnly(_("Density ratio \xCF\x83"),
               _("Actual air density divided by ISA sea-level density (1.225 kg/m³). "
                 "Values < 1 indicate performance-degrading high-density-altitude "
@@ -297,30 +340,35 @@ TakeoffCalculatorPanel::Prepare(ContainerWindow &parent,
               "%.4f",
               1.0);
 
-  /* 14 VStallResult */
+  /* 15 VStallResult */
   AddReadOnly(_("V stall"),
               _("1-g stall speed at current gross mass and field density."),
               "%.1f %s",
               UnitGroup::HORIZONTAL_SPEED, 0);
 
-  /* 15 VRotateResult */
+  /* 16 VRotateResult */
   AddReadOnly(_("V rotate"),
               _("Rotation speed = 1.10 × V stall."),
               "%.1f %s",
               UnitGroup::HORIZONTAL_SPEED, 0);
 
-  /* 16 GroundRollResult */
+  /* 17 GroundRollResult */
   AddReadOnly(_("Ground roll (corrected)"),
               _("Corrected ground roll accounting for weight, density altitude, "
                 "headwind, slope, and surface friction."),
               "%.0f %s",
               UnitGroup::ALTITUDE, 0);
 
-  /* 17 Distance50ftResult */
+  /* 18 Distance50ftResult */
   AddReadOnly(_("Dist. to 50 ft (corrected)"),
               _("Corrected total takeoff distance to clear a 15 m (50 ft) obstacle."),
               "%.0f %s",
               UnitGroup::ALTITUDE, 0);
+
+  /* 19 RunwayWarningResult */
+  AddReadOnly(_("Runway status"),
+              _("Warning shown when the corrected ground roll exceeds "
+                "the entered runway length."));
 
   // Compute initial display
   UpdateResults();
@@ -361,6 +409,10 @@ TakeoffCalculatorPanel::UpdateResults() noexcept
   p.runway_elevation_m =
       Units::ToSysAltitude(static_cast<const DataFieldFloat &>(
           GetDataField(RunwayElev)).GetValue());
+
+  const double runway_length_m =
+      Units::ToSysAltitude(static_cast<const DataFieldFloat &>(
+          GetDataField(RunwayLength)).GetValue());
 
   p.oat_celsius =
       Temperature::FromUser(static_cast<const DataFieldFloat &>(
@@ -408,6 +460,31 @@ TakeoffCalculatorPanel::UpdateResults() noexcept
   LoadValue(VRotateResult,     r.v_rotate_ms,        UnitGroup::HORIZONTAL_SPEED);
   LoadValue(GroundRollResult,  r.ground_roll_m,      UnitGroup::ALTITUDE);
   LoadValue(Distance50ftResult, r.distance_50ft_m,   UnitGroup::ALTITUDE);
+
+  // -----------------------------------------------------------------------
+  // Runway length warning
+  // -----------------------------------------------------------------------
+  if (runway_length_m > 0.0) {
+    char buf[256];
+    if (r.ground_roll_m > runway_length_m) {
+      snprintf(buf, sizeof(buf),
+               _("WARNING: Ground roll (%.0f %s) exceeds runway (%.0f %s)!"),
+               Units::ToUserAltitude(r.ground_roll_m),
+               Units::GetAltitudeName(),
+               Units::ToUserAltitude(runway_length_m),
+               Units::GetAltitudeName());
+    } else {
+      snprintf(buf, sizeof(buf),
+               _("OK: Ground roll (%.0f %s) within runway (%.0f %s)."),
+               Units::ToUserAltitude(r.ground_roll_m),
+               Units::GetAltitudeName(),
+               Units::ToUserAltitude(runway_length_m),
+               Units::GetAltitudeName());
+    }
+    GetControl(RunwayWarningResult).SetText(buf);
+  } else {
+    GetControl(RunwayWarningResult).SetText("");
+  }
 }
 
 // ---------------------------------------------------------------------------
