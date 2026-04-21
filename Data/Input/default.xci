@@ -403,6 +403,11 @@ event=Analysis
 
 mode=default
 type=gesture
+data=ULD
+event=TakeoffCalculator
+
+mode=default
+type=gesture
 data=LDR
 event=Checklist
 
@@ -950,6 +955,14 @@ location=5
 
 mode=Info2
 type=key
+data=7
+event=TakeoffCalculator
+event=Mode default
+label=Takeoff\nCalc
+location=6
+
+mode=Info2
+type=key
 data=8
 event=Setup Teamcode
 event=Mode default
@@ -986,9 +999,9 @@ location=4
 mode=Info3
 type=key
 data=6
-event=Credits
+event=TakeoffCalculator
 event=Mode default
-label=Credits
+label=Takeoff\nCalc
 location=5
 
 mode=Info3

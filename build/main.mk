@@ -62,6 +62,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/Traffic/FlarmTrafficDetails.cpp \
 	$(SRC)/Dialogs/Traffic/TeamCodeDialog.cpp \
 	$(SRC)/Dialogs/dlgAnalysis.cpp \
+	$(SRC)/Dialogs/TakeoffDialog.cpp \
 	$(SRC)/Dialogs/dlgChecklist.cpp \
 	$(SRC)/Dialogs/ProfileListDialog.cpp \
 	$(SRC)/Dialogs/Plane/PlaneListDialog.cpp \
@@ -229,6 +230,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(SRC)/Atmosphere/AirDensity.cpp \
 	$(SRC)/Atmosphere/CuSonde.cpp \
+	$(SRC)/TakeoffCalculator/TakeoffCalculator.cpp \
 	$(SRC)/net/client/WeGlide/UploadIGCFile.cpp \
 	$(SRC)/Plane/PlaneGlue.cpp \
 	$(SRC)/Plane/PlaneFileGlue.cpp \
