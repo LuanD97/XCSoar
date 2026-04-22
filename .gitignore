@@ -38,3 +38,4 @@ build/local-config.mk
 .ccache
 messages.mo
 po/*.mo
+a.out
