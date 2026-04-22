@@ -65,6 +65,11 @@ PlaneGlue::Read(Plane &plane, KeyValueFileReader &reader)
   bool has_dump_time = false;
   bool has_max_speed = false;
   bool has_wing_area = false;
+  bool has_to_ground_roll = false;
+  bool has_to_dist_50ft = false;
+  bool has_to_cl_clean = false;
+  bool has_to_cl_flap1 = false;
+  bool has_to_cl_flap2 = false;
 
   KeyValuePair pair;
   while (reader.Read(pair)) {
@@ -101,6 +106,16 @@ PlaneGlue::Read(Plane &plane, KeyValueFileReader &reader)
       has_max_speed = ReadDouble(pair.value, plane.max_speed);
     } else if (!has_wing_area && StringIsEqual(pair.key, "WingArea")) {
       has_wing_area = ReadDouble(pair.value, plane.wing_area);
+    } else if (!has_to_ground_roll && StringIsEqual(pair.key, "TakeoffGroundRoll")) {
+      has_to_ground_roll = ReadDouble(pair.value, plane.takeoff.afm_ground_roll_m);
+    } else if (!has_to_dist_50ft && StringIsEqual(pair.key, "TakeoffDist50ft")) {
+      has_to_dist_50ft = ReadDouble(pair.value, plane.takeoff.afm_distance_50ft_m);
+    } else if (!has_to_cl_clean && StringIsEqual(pair.key, "TakeoffCLClean")) {
+      has_to_cl_clean = ReadDouble(pair.value, plane.takeoff.cl_max[0]);
+    } else if (!has_to_cl_flap1 && StringIsEqual(pair.key, "TakeoffCLFlap1")) {
+      has_to_cl_flap1 = ReadDouble(pair.value, plane.takeoff.cl_max[1]);
+    } else if (!has_to_cl_flap2 && StringIsEqual(pair.key, "TakeoffCLFlap2")) {
+      has_to_cl_flap2 = ReadDouble(pair.value, plane.takeoff.cl_max[2]);
     }
   }
 
@@ -133,6 +148,17 @@ PlaneGlue::Read(Plane &plane, KeyValueFileReader &reader)
     plane.max_speed = 55.555;
   if (!has_wing_area)
     plane.wing_area = 0;
+
+  if (!has_to_ground_roll)
+    plane.takeoff.afm_ground_roll_m = 0;
+  if (!has_to_dist_50ft)
+    plane.takeoff.afm_distance_50ft_m = 0;
+  if (!has_to_cl_clean)
+    plane.takeoff.cl_max[0] = 0;
+  if (!has_to_cl_flap1)
+    plane.takeoff.cl_max[1] = 0;
+  if (!has_to_cl_flap2)
+    plane.takeoff.cl_max[2] = 0;
 
   return true;
 }
@@ -188,6 +214,27 @@ PlaneGlue::Write(const Plane &plane, KeyValueFileWriter &writer)
   writer.Write("WingArea", tmp);
   tmp.Format("%u", (unsigned)plane.weglide_glider_type);
   writer.Write("WeGlideAircraftType", tmp);
+
+  if (plane.takeoff.afm_ground_roll_m > 0) {
+    tmp.Format("%f", plane.takeoff.afm_ground_roll_m);
+    writer.Write("TakeoffGroundRoll", tmp);
+  }
+  if (plane.takeoff.afm_distance_50ft_m > 0) {
+    tmp.Format("%f", plane.takeoff.afm_distance_50ft_m);
+    writer.Write("TakeoffDist50ft", tmp);
+  }
+  if (plane.takeoff.cl_max[0] > 0) {
+    tmp.Format("%f", plane.takeoff.cl_max[0]);
+    writer.Write("TakeoffCLClean", tmp);
+  }
+  if (plane.takeoff.cl_max[1] > 0) {
+    tmp.Format("%f", plane.takeoff.cl_max[1]);
+    writer.Write("TakeoffCLFlap1", tmp);
+  }
+  if (plane.takeoff.cl_max[2] > 0) {
+    tmp.Format("%f", plane.takeoff.cl_max[2]);
+    writer.Write("TakeoffCLFlap2", tmp);
+  }
 }
 
 void

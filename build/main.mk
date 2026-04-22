@@ -231,6 +231,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/Atmosphere/AirDensity.cpp \
 	$(SRC)/Atmosphere/CuSonde.cpp \
 	$(SRC)/TakeoffCalculator/TakeoffCalculator.cpp \
+	$(SRC)/TakeoffCalculator/TugStore.cpp \
+	$(SRC)/TakeoffCalculator/TowTakeoffCalculator.cpp \
 	$(SRC)/net/client/WeGlide/UploadIGCFile.cpp \
 	$(SRC)/Plane/PlaneGlue.cpp \
 	$(SRC)/Plane/PlaneFileGlue.cpp \
