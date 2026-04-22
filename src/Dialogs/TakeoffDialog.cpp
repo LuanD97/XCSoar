@@ -109,11 +109,14 @@ class TakeoffCalculatorPanel final
 
   /**
    * Landable waypoints within the current search radius, sorted
-   * ascending by distance from the reference location.  Entry N in
-   * this vector corresponds to enum id N+1 in RunwaySelect
-   * (id 0 is the "none" placeholder).
+   * ascending by distance from the reference location.  Vector index N
+   * corresponds to enum id N+1 in RunwaySelect (enum id 0 is reserved
+   * for the "none" placeholder).
    */
   std::vector<WaypointPtr> nearby_waypoints_;
+
+  /** Maximum number of runways shown in the dropdown. */
+  static constexpr std::size_t kMaxRunwayListSize = 50;
 
 public:
   explicit TakeoffCalculatorPanel() noexcept
@@ -207,9 +210,9 @@ TakeoffCalculatorPanel::UpdateRunwayList() noexcept
               return a->location.Distance(ref) < b->location.Distance(ref);
             });
 
-  // Limit to 50 entries to keep the list manageable
-  if (nearby_waypoints_.size() > 50)
-    nearby_waypoints_.resize(50);
+  // Limit to manageable number of entries
+  if (nearby_waypoints_.size() > kMaxRunwayListSize)
+    nearby_waypoints_.resize(kMaxRunwayListSize);
 
   if (nearby_waypoints_.empty()) {
     df.addEnumText(_("– (none within range) –"));
@@ -220,38 +223,31 @@ TakeoffCalculatorPanel::UpdateRunwayList() noexcept
   // id=0 → no selection
   df.addEnumText(_("– (none) –"));
 
-  // Build a label for each waypoint: "Name (Xkm, Ym elev, Zm rwy)"
-  char label[128];
+  // Build a label for each waypoint: "Name (Xkm[, Ym elev][, rwy Zm])"
+  char label[160];
   for (const auto &wp : nearby_waypoints_) {
     const double dist_m = wp->location.Distance(ref);
-    const double dist_u = Units::ToUserDistance(dist_m);
-    const char *dist_name = Units::GetDistanceName();
+    const char *alt_name = Units::GetAltitudeName();
 
-    if (wp->has_elevation && wp->runway.IsLengthDefined()) {
-      snprintf(label, sizeof(label),
-               "%s (%.1f%s, %.0f%s, rwy %.0f%s)",
-               wp->name.c_str(),
-               dist_u, dist_name,
-               Units::ToUserAltitude(wp->elevation), Units::GetAltitudeName(),
-               Units::ToUserAltitude(wp->runway.GetLength()), Units::GetAltitudeName());
-    } else if (wp->has_elevation) {
-      snprintf(label, sizeof(label),
-               "%s (%.1f%s, %.0f%s)",
-               wp->name.c_str(),
-               dist_u, dist_name,
-               Units::ToUserAltitude(wp->elevation), Units::GetAltitudeName());
-    } else if (wp->runway.IsLengthDefined()) {
-      snprintf(label, sizeof(label),
-               "%s (%.1f%s, rwy %.0f%s)",
-               wp->name.c_str(),
-               dist_u, dist_name,
-               Units::ToUserAltitude(wp->runway.GetLength()), Units::GetAltitudeName());
-    } else {
-      snprintf(label, sizeof(label),
-               "%s (%.1f%s)",
-               wp->name.c_str(),
-               dist_u, dist_name);
-    }
+    // Start with name + distance
+    int pos = snprintf(label, sizeof(label), "%s (%.1f%s",
+                       wp->name.c_str(),
+                       Units::ToUserDistance(dist_m), Units::GetDistanceName());
+
+    // Append elevation if known
+    if (wp->has_elevation && pos > 0 && pos < (int)sizeof(label) - 1)
+      pos += snprintf(label + pos, sizeof(label) - pos,
+                      ", %.0f%s", Units::ToUserAltitude(wp->elevation), alt_name);
+
+    // Append runway length if known
+    if (wp->runway.IsLengthDefined() && pos > 0 && pos < (int)sizeof(label) - 1)
+      pos += snprintf(label + pos, sizeof(label) - pos,
+                      ", rwy %.0f%s",
+                      Units::ToUserAltitude(wp->runway.GetLength()), alt_name);
+
+    if (pos > 0 && pos < (int)sizeof(label) - 1)
+      snprintf(label + pos, sizeof(label) - pos, ")");
+
     df.addEnumText(label);  // assigned id = current entries.size() before insert
   }
 
