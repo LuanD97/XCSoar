@@ -15,8 +15,6 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../../XCSoarData:/root/.xcsoar 
       - /mnt/wslg:/mnt/wslg                 # WSLg runtime (Wayland + audio)
-    devices:
-      - /dev/dri:/dev/dri                   # GPU access for OpenGL
     network_mode: host
     stdin_open: true
     tty: true
