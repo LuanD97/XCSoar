@@ -11,7 +11,7 @@ services:
     command: /opt/xcsoar/output/UNIX/bin/xcsoar
     volumes:
       - ../../:/opt/xcsoar
-      - ${HOME}/.ccache:/opt/xcsoar/.ccache
+      - xcsoar-ccache:/root/.ccache
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../../XCSoarData:/root/.xcsoar 
       - /mnt/wslg:/mnt/wslg                 # WSLg runtime (Wayland + audio)
@@ -20,3 +20,6 @@ services:
     network_mode: host
     stdin_open: true
     tty: true
+
+volumes:
+  xcsoar-ccache:

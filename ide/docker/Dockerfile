@@ -19,4 +19,4 @@ WORKDIR /opt/xcsoar
 RUN find . -type f \( -name "*.py" -o -name "*.sh" -o -name "Makefile" -o -name "*.mk" \) -exec sed -i 's/\r$//' {} \; && \
     find . -type f \( -name "*.sh" -o -name "Makefile" -o -name "*.mk" \) -exec chmod +x {} \;
 
-ENV CCACHE_DIR=/opt/xcsoar/.ccache
+ENV CCACHE_DIR=/root/.ccache

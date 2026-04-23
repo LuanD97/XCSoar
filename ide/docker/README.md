@@ -58,7 +58,11 @@ xcsoar-compile UNIX-SDL
 ### Using ccache
 
 Just add `USE_CCACHE=y` to the `xcsoar-compile` or `make` command (as you would do if compiling locally).
-ccache will store its db into `./.ccache/`, so the cache will be shared across all container instances.
+By default, `ccache` stores its data in `/root/.ccache`.
+
+With the provided `docker-compose.yml`, that directory is backed by the named
+Docker volume `xcsoar-ccache`, so the cache is shared across container
+instances without putting lots of small cache files on the host bind mount.
 
 ## WSL / Docker Compose Setup
 
@@ -138,5 +142,6 @@ make TARGET=UNIX -j4  # Build
 
 - **Line Endings**: The `.gitattributes` file ensures all shell and Python scripts use Unix line endings (LF) when checked out on Windows
 - **Volume Mounts**: Source code is mounted from the host at `/opt/xcsoar` inside the container
-- **ccache**: Build cache persists across container runs in `.ccache/` directory
+- **ccache**: Build cache persists across container runs in the
+  `xcsoar-ccache` Docker volume mounted at `/root/.ccache`
 - **X11 Forwarding**: Only available when DISPLAY environment variable is set and X server is accessible
