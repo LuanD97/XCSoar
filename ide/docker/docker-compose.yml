@@ -11,7 +11,13 @@ services:
     command: /opt/xcsoar/output/UNIX/bin/xcsoar
     volumes:
       - ../../:/opt/xcsoar
+<<<<<<< Updated upstream
       - xcsoar-ccache:/root/.ccache
+=======
+      - ${HOME}/.ccache:/opt/xcsoar/.ccache
+      - xcsoar-output-download:/opt/xcsoar/output/download
+      - xcsoar-output-src:/opt/xcsoar/output/src
+>>>>>>> Stashed changes
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../../XCSoarData:/root/.xcsoar 
       - /mnt/wslg:/mnt/wslg                 # WSLg runtime (Wayland + audio)
@@ -20,4 +26,9 @@ services:
     tty: true
 
 volumes:
+<<<<<<< Updated upstream
   xcsoar-ccache:
+=======
+  xcsoar-output-download:
+  xcsoar-output-src:
+>>>>>>> Stashed changes
