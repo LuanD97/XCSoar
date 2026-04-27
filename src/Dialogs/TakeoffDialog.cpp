@@ -536,7 +536,7 @@ private:
 
   void OnModified(DataField &df) noexcept override
   {
-    if (GetCount() > 0 && &df == &GetDataField(FlapSelect)) {
+    if (&df == &GetDataField(FlapSelect)) {
       const unsigned flap =
           static_cast<const DataFieldEnum &>(df).GetValue();
       ApplyFlapSetting(flap);
