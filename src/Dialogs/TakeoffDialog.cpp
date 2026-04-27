@@ -157,9 +157,9 @@ private:
 void
 TakeoffCalculatorPanel::OnModified(DataField &df) noexcept
 {
-  if (&df == GetDataField(SearchRadius)) {
+  if (&df == &GetDataField(SearchRadius)) {
     UpdateRunwayList();
-  } else if (&df == GetDataField(RunwaySelect)) {
+  } else if (&df == &GetDataField(RunwaySelect)) {
     ApplySelectedWaypoint();
   }
   UpdateResults();
