@@ -12,6 +12,8 @@ services:
     volumes:
       - ../../:/opt/xcsoar
       - xcsoar-ccache:/root/.ccache
+      - xcsoar-output-download:/opt/xcsoar/output/download
+      - xcsoar-output-src:/opt/xcsoar/output/src
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../../XCSoarData:/root/.xcsoar 
       - /mnt/wslg:/mnt/wslg                 # WSLg runtime (Wayland + audio)
@@ -21,3 +23,5 @@ services:
 
 volumes:
   xcsoar-ccache:
+  xcsoar-output-download:
+  xcsoar-output-src:
