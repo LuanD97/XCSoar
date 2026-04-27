@@ -48,22 +48,8 @@ ComputeAtmosphere(double runway_elevation_m, double oat_celsius,
 }
 
 /**
- * Compute liftoff speed for one aircraft given actual air density.
- *   V_LOF = 1.15 × V_S = 1.15 × √(2mg / (ρ S CL))
- */
-static double
-ComputeVLof(double mass_kg, double wing_area_m2, double cl_max,
-            double air_density) noexcept
-{
-  const double S   = std::max(wing_area_m2, 0.1);
-  const double CL  = std::max(cl_max,       0.1);
-  const double rho = std::max(air_density,  1e-3);
-  const double v_s = std::sqrt(2.0 * mass_kg * kGravity / (rho * S * CL));
-  return 1.15 * v_s;
-}
-
-/**
  * Compute stall speed (1 g) for one aircraft.
+ * Liftoff speed is 1.15 × V_stall.
  */
 static double
 ComputeVStall(double mass_kg, double wing_area_m2, double cl_max,
