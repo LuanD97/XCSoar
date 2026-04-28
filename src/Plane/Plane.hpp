@@ -45,4 +45,31 @@ struct Plane
    * This is set when a plane profile file is loaded from Profile::GetPath("PlanePath").
    */
   bool plane_profile_active;
+
+  /**
+   * Takeoff performance data used by the aerotow calculator.
+   * These are optional; zero values indicate "not set".
+   */
+  struct TakeoffConfig {
+    /**
+     * AFM/POH ground roll at reference mass, sea-level ISA,
+     * zero wind, level runway (m).  0 = not set.
+     */
+    double afm_ground_roll_m;
+
+    /**
+     * AFM/POH total distance to clear a 15 m (50 ft) obstacle at
+     * reference conditions (m).  0 = not set (auto = 1.7 × ground roll).
+     */
+    double afm_distance_50ft_m;
+
+    /**
+     * Maximum lift coefficient at three flap settings:
+     *   [0] Clean / no flaps  (typical 1.4 – 1.6)
+     *   [1] Takeoff flap      (typical 1.6 – 2.0)
+     *   [2] Full flap         (typical 2.0 – 2.4)
+     * Zero means "not set".
+     */
+    double cl_max[3];
+  } takeoff;
 };
